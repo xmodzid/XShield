@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 import os
@@ -26,7 +26,8 @@ print(f"{color.G}[INFO]{color.N} Python version {PYTHON_VER} terdeteksi.")
 # CEK CLANG / GCLANG
 # =========================
 def check_command(cmd):
-    return subprocess.call(f"command -v {cmd}", shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
+    return subprocess.call(f"command -v {cmd}", shell=True,
+                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL) == 0
 
 if check_command("clang"):
     CC = "clang"
@@ -40,22 +41,27 @@ else:
 print(f"{color.G}[INFO]{color.N} Compiler ditemukan: {CC}")
 
 # =========================
+# PATH SCRIPT & REPO
+# =========================
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # folder tempat run.py berada
+TARGET_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))  # parent folder = repo root
+
+REPO_URL = "https://github.com/xmodzid/XShield.git"
+
+# =========================
 # CLONE / UPDATE REPO
 # =========================
-REPO_URL = "https://github.com/xmodzid/XShield.git"
-TARGET_DIR = "XShield"
-
 if not os.path.isdir(TARGET_DIR):
     print(f"{color.C}[INFO]{color.N} Meng-clone repo...")
-    os.system(f"git clone {REPO_URL}")
+    os.system(f"git clone {REPO_URL} {TARGET_DIR}")
 else:
     print(f"{color.C}[INFO]{color.N} Repo sudah ada, update saja...")
     os.chdir(TARGET_DIR)
     os.system("git pull")
-    os.chdir("..")
+    os.chdir(SCRIPT_DIR)
 
 # =========================
-# PATH FILE DI TOOLS
+# PATH FILES DI TOOLS
 # =========================
 c_file = os.path.join(TARGET_DIR, "tools", "xshield.c")
 binary_file = os.path.join(TARGET_DIR, "xshield")
@@ -69,7 +75,7 @@ if os.path.isfile(c_file):
     os.system(f"{CC} {c_file} -o {binary_file}")
     print(f"{color.G}[INFO]{color.N} Compile selesai. Binary: {binary_file}")
 else:
-    print(f"{color.Y}[WARN]{color.N} xshield.c tidak ditemukan di repo!")
+    print(f"{color.Y}[WARN]{color.N} xshield.c tidak ditemukan!")
 
 # =========================
 # JALANKAN run.py
@@ -78,7 +84,7 @@ if os.path.isfile(repo_run_py):
     print(f"{color.C}[INFO]{color.N} Menjalankan run.py dari repo...")
     os.system(f"{sys.executable} {repo_run_py}")
 else:
-    print(f"{color.Y}[WARN]{color.N} run.py tidak ditemukan di repo!")
+    print(f"{color.Y}[WARN]{color.N} run.py tidak ditemukan!")
 
 # =========================
 # SELESAI
