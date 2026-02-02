@@ -4,6 +4,7 @@
 import os
 import sys
 import subprocess
+import random
 
 # =========================
 # WARNA TERMINAL
@@ -13,26 +14,25 @@ class color:
     G = '\033[1;32m'
     Y = '\033[1;33m'
     C = '\033[1;36m'
-    W = '\033[1;37m'
     N = '\033[0m'
 
 # =========================
-# PASTIKAN RUN DARI /XShield/tools
+# PASTIKAN DI /tools
 # =========================
-EXPECTED_DIR_NAME = "tools"
-cwd = os.path.basename(os.getcwd())
-if cwd != EXPECTED_DIR_NAME:
-    print(f"{color.R}[ERROR]{color.N} Jalankan script hanya dari folder '{EXPECTED_DIR_NAME}'!")
+if os.path.basename(os.getcwd()) != "tools":
+    print(f"{color.R}[ERROR]{color.N} Jalankan dari folder XShield/tools")
     sys.exit(1)
+
+SCRIPT_DIR = os.getcwd()
+TARGET_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
 
 # =========================
 # CEK PYTHON
 # =========================
-PYTHON_VER = sys.version_info[0]
-print(f"{color.G}[INFO]{color.N} Python version {PYTHON_VER} terdeteksi.")
+print(f"{color.G}[INFO]{color.N} Python {sys.version_info[0]} terdeteksi.")
 
 # =========================
-# CEK CLANG / GCLANG
+# CEK COMPILER
 # =========================
 def check_command(cmd):
     return subprocess.call(f"command -v {cmd}", shell=True,
@@ -43,80 +43,82 @@ if check_command("clang"):
 elif check_command("gclang"):
     CC = "gclang"
 else:
-    print(f"{color.R}[ERROR]{color.N} Clang atau GClang tidak ditemukan!")
-    print(f"{color.Y}Silakan install dengan: pkg install clang{color.N}")
+    print(f"{color.R}[ERROR]{color.N} Clang tidak ditemukan!")
     sys.exit(1)
 
-print(f"{color.G}[INFO]{color.N} Compiler ditemukan: {CC}")
+print(f"{color.G}[INFO]{color.N} Compiler: {CC}")
 
 # =========================
-# PATH REPO
+# INPUT FILE PAYLOAD
 # =========================
-SCRIPT_DIR = os.getcwd()  # sekarang pasti /XShield/tools
-TARGET_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))  # parent folder = repo root
-
-REPO_URL = "https://github.com/xmodzid/XShield.git"
-
-# =========================
-# CLONE / UPDATE REPO
-# =========================
-if not os.path.isdir(TARGET_DIR):
-    print(f"{color.C}[INFO]{color.N} Meng-clone repo...")
-    os.system(f"git clone {REPO_URL} {TARGET_DIR}")
+if len(sys.argv) > 1:
+    payload_input = sys.argv[1]
 else:
-    print(f"{color.C}[INFO]{color.N} Repo sudah ada, update saja...")
-    os.chdir(TARGET_DIR)
-    os.system("git pull")
-    os.chdir(SCRIPT_DIR)
+    payload_input = "payload.bin"
+
+payload_path = os.path.join(SCRIPT_DIR, payload_input)
+payload_header = os.path.join(SCRIPT_DIR, "payload.h")
+
+if not os.path.isfile(payload_path):
+    print(f"{color.R}[ERROR]{color.N} File tidak ditemukan: {payload_input}")
+    sys.exit(1)
 
 # =========================
-# PATH FILES DI TOOLS
+# BACA FILE PAYLOAD
 # =========================
-c_file = os.path.join(SCRIPT_DIR, "xshield.c")
-binary_file = os.path.join(TARGET_DIR, "xshield")
-repo_run_py = os.path.join(SCRIPT_DIR, "run.py")
-payload_file = os.path.join(SCRIPT_DIR, "payload.h")  # file baru
+with open(payload_path, "rb") as f:
+    data = f.read()
+
+print(f"{color.C}[INFO]{color.N} Ukuran payload: {len(data)} bytes")
 
 # =========================
-# GENERATE PAYLOAD.H
+# GENERATE KEY ACAK (POLYMORPHIC)
 # =========================
-print(f"{color.C}[INFO]{color.N} Membuat payload.h ...")
-payload_content = b"This is example payload content"  # ganti sesuai kebutuhan
-# Ubah payload menjadi array byte untuk C
-payload_array = ", ".join(str(b) for b in payload_content)
-payload_h_content = f"""#ifndef PAYLOAD_H
+k1 = [random.randint(1,255) for _ in range(4)]
+k2 = [random.randint(1,255) for _ in range(4)]
+
+# XOR ENKRIP PAYLOAD
+enc = bytearray()
+for i, b in enumerate(data):
+    k = k1[i % 4] ^ k2[i % 4]
+    enc.append(b ^ k)
+
+array_data = ", ".join(f"0x{b:02x}" for b in enc)
+k1_str = ", ".join(f"0x{x:02x}" for x in k1)
+k2_str = ", ".join(f"0x{x:02x}" for x in k2)
+
+# =========================
+# TULIS payload.h
+# =========================
+with open(payload_header, "w") as f:
+    f.write(f"""#ifndef PAYLOAD_H
 #define PAYLOAD_H
 
-unsigned char payload[] = {{ {payload_array} }};
-unsigned int payload_len = {len(payload_content)};
+unsigned char payload[] = {{
+{array_data}
+}};
+
+unsigned int payload_len = {len(enc)};
+
+unsigned char k_part1[4] = {{ {k1_str} }};
+unsigned char k_part2[4] = {{ {k2_str} }};
 
 #endif
-"""
-with open(payload_file, "w") as f:
-    f.write(payload_h_content)
+""")
 
-print(f"{color.G}[INFO]{color.N} payload.h berhasil dibuat: {payload_file}")
+print(f"{color.G}[INFO]{color.N} payload.h berhasil dibuat (terenkripsi)")
 
 # =========================
 # COMPILE xshield.c
 # =========================
+c_file = os.path.join(SCRIPT_DIR, "xshield.c")
+binary_file = os.path.join(TARGET_DIR, "xshield")
+
 if os.path.isfile(c_file):
-    print(f"{color.C}[INFO]{color.N} Meng-compile xshield.c ...")
+    print(f"{color.C}[INFO]{color.N} Compile xshield.c ...")
     os.system(f"{CC} {c_file} -o {binary_file}")
-    print(f"{color.G}[INFO]{color.N} Compile selesai. Binary: {binary_file}")
+    print(f"{color.G}[INFO]{color.N} Binary jadi: {binary_file}")
 else:
-    print(f"{color.Y}[WARN]{color.N} xshield.c tidak ditemukan!")
+    print(f"{color.Y}[WARN]{color.N} xshield.c tidak ditemukan")
 
-# =========================
-# JALANKAN run.py
-# =========================
-if os.path.isfile(repo_run_py):
-    print(f"{color.C}[INFO]{color.N} Menjalankan run.py dari repo...")
-    os.system(f"{sys.executable} {repo_run_py}")
-else:
-    print(f"{color.Y}[WARN]{color.N} run.py tidak ditemukan!")
-
-# =========================
-# SELESAI
-# =========================
 print(f"{color.G}[INFO]{color.N} Semua proses selesai.")
