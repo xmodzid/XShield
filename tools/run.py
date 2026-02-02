@@ -60,7 +60,7 @@ else:
 # =========================
 # COMPILE xshield.c JIKA ADA
 # =========================
-c_file = os.path.join(TARGET_DIR, "xshield.c")
+c_file = os.path.join(TARGET_DIR, "/tools/xshield.c")
 binary_file = os.path.join(TARGET_DIR, "xshield")
 
 if os.path.isfile(c_file):
@@ -73,7 +73,7 @@ else:
 # =========================
 # JALANKAN run.py YANG ADA DI REPO
 # =========================
-repo_run_py = os.path.join(TARGET_DIR, "run.py")
+repo_run_py = os.path.join(TARGET_DIR, "/tools/run.py")
 if os.path.isfile(repo_run_py):
     print(f"{color.C}[INFO]{color.N} Menjalankan run.py dari repo...")
     os.system(f"{sys.executable} {repo_run_py}")
