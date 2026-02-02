@@ -17,6 +17,15 @@ class color:
     N = '\033[0m'
 
 # =========================
+# PASTIKAN RUN DARI /XShield/tools
+# =========================
+EXPECTED_DIR_NAME = "tools"
+cwd = os.path.basename(os.getcwd())
+if cwd != EXPECTED_DIR_NAME:
+    print(f"{color.R}[ERROR]{color.N} Jalankan script hanya dari folder '{EXPECTED_DIR_NAME}'!")
+    sys.exit(1)
+
+# =========================
 # CEK PYTHON
 # =========================
 PYTHON_VER = sys.version_info[0]
@@ -41,9 +50,9 @@ else:
 print(f"{color.G}[INFO]{color.N} Compiler ditemukan: {CC}")
 
 # =========================
-# PATH SCRIPT & REPO
+# PATH REPO
 # =========================
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))  # folder tempat run.py berada
+SCRIPT_DIR = os.getcwd()  # sekarang pasti /XShield/tools
 TARGET_DIR = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))  # parent folder = repo root
 
 REPO_URL = "https://github.com/xmodzid/XShield.git"
@@ -63,9 +72,9 @@ else:
 # =========================
 # PATH FILES DI TOOLS
 # =========================
-c_file = os.path.join(TARGET_DIR, "tools", "xshield.c")
+c_file = os.path.join(SCRIPT_DIR, "xshield.c")
 binary_file = os.path.join(TARGET_DIR, "xshield")
-repo_run_py = os.path.join(TARGET_DIR, "tools", "run.py")
+repo_run_py = os.path.join(SCRIPT_DIR, "run.py")
 
 # =========================
 # COMPILE xshield.c
