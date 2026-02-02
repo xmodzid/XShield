@@ -19,10 +19,7 @@ class color:
 # =========================
 # CEK PYTHON
 # =========================
-if sys.version_info[0] >= 3:
-    PYTHON_VER = 3
-else:
-    PYTHON_VER = 2
+PYTHON_VER = sys.version_info[0]
 print(f"{color.G}[INFO]{color.N} Python version {PYTHON_VER} terdeteksi.")
 
 # =========================
@@ -43,7 +40,7 @@ else:
 print(f"{color.G}[INFO]{color.N} Compiler ditemukan: {CC}")
 
 # =========================
-# CLONE REPO JIKA BELUM ADA
+# CLONE / UPDATE REPO
 # =========================
 REPO_URL = "https://github.com/xmodzid/XShield.git"
 TARGET_DIR = "XShield"
@@ -58,11 +55,15 @@ else:
     os.chdir("..")
 
 # =========================
-# COMPILE xshield.c JIKA ADA
+# PATH FILE DI TOOLS
 # =========================
-c_file = os.path.join(TARGET_DIR, "/tools/xshield.c")
+c_file = os.path.join(TARGET_DIR, "tools", "xshield.c")
 binary_file = os.path.join(TARGET_DIR, "xshield")
+repo_run_py = os.path.join(TARGET_DIR, "tools", "run.py")
 
+# =========================
+# COMPILE xshield.c
+# =========================
 if os.path.isfile(c_file):
     print(f"{color.C}[INFO]{color.N} Meng-compile xshield.c...")
     os.system(f"{CC} {c_file} -o {binary_file}")
@@ -71,13 +72,15 @@ else:
     print(f"{color.Y}[WARN]{color.N} xshield.c tidak ditemukan di repo!")
 
 # =========================
-# JALANKAN run.py YANG ADA DI REPO
+# JALANKAN run.py
 # =========================
-repo_run_py = os.path.join(TARGET_DIR, "/tools/run.py")
 if os.path.isfile(repo_run_py):
     print(f"{color.C}[INFO]{color.N} Menjalankan run.py dari repo...")
     os.system(f"{sys.executable} {repo_run_py}")
 else:
     print(f"{color.Y}[WARN]{color.N} run.py tidak ditemukan di repo!")
 
+# =========================
+# SELESAI
+# =========================
 print(f"{color.G}[INFO]{color.N} Semua proses selesai.")
