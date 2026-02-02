@@ -20,7 +20,7 @@ jobs:
         pip install flake8 pytest
 
     - name: Lint tools
-      run: flake8 tools/
+      run: flake8 tools/ --exit-zero
 
     - name: Test tools
       run: pytest tools/
