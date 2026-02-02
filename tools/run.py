@@ -45,8 +45,8 @@ print(f"{color.G}[INFO]{color.N} Compiler ditemukan: {CC}")
 # =========================
 # CLONE REPO JIKA BELUM ADA
 # =========================
-REPO_URL = "https://github.com/xmodzid/XModShield-LLVM.git"
-TARGET_DIR = "XModShield-LLVM"
+REPO_URL = "https://github.com/xmodzid/XShield.git"
+TARGET_DIR = "XShield"
 
 if not os.path.isdir(TARGET_DIR):
     print(f"{color.C}[INFO]{color.N} Meng-clone repo...")
