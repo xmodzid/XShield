@@ -75,12 +75,33 @@ else:
 c_file = os.path.join(SCRIPT_DIR, "xshield.c")
 binary_file = os.path.join(TARGET_DIR, "xshield")
 repo_run_py = os.path.join(SCRIPT_DIR, "run.py")
+payload_file = os.path.join(SCRIPT_DIR, "payload.h")  # file baru
+
+# =========================
+# GENERATE PAYLOAD.H
+# =========================
+print(f"{color.C}[INFO]{color.N} Membuat payload.h ...")
+payload_content = b"This is example payload content"  # ganti sesuai kebutuhan
+# Ubah payload menjadi array byte untuk C
+payload_array = ", ".join(str(b) for b in payload_content)
+payload_h_content = f"""#ifndef PAYLOAD_H
+#define PAYLOAD_H
+
+unsigned char payload[] = {{ {payload_array} }};
+unsigned int payload_len = {len(payload_content)};
+
+#endif
+"""
+with open(payload_file, "w") as f:
+    f.write(payload_h_content)
+
+print(f"{color.G}[INFO]{color.N} payload.h berhasil dibuat: {payload_file}")
 
 # =========================
 # COMPILE xshield.c
 # =========================
 if os.path.isfile(c_file):
-    print(f"{color.C}[INFO]{color.N} Meng-compile xshield.c...")
+    print(f"{color.C}[INFO]{color.N} Meng-compile xshield.c ...")
     os.system(f"{CC} {c_file} -o {binary_file}")
     print(f"{color.G}[INFO]{color.N} Compile selesai. Binary: {binary_file}")
 else:
